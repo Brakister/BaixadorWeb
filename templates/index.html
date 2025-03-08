@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#00B4D8",
+              secondary: "#1A1A1A",
+            },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      .url-input {
+      background: rgba(42, 42, 42, 0.8);
+      border: 2px solid;
+      border-image: linear-gradient(90deg, rgba(255, 0, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3)) 1;
+      color: white;
+      position: relative;
+      animation: borderRotate 4s linear infinite;
+      }
+      .diagonal-lines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      }
+      .diagonal-lines::before,
+      .diagonal-lines::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 200%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      }
+      .diagonal-lines::before {
+      left: 25%;
+      top: -50%;
+      transform: rotate(45deg);
+      transform-origin: center center;
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 55%);
+      }
+      .diagonal-lines::after {
+      right: 25%;
+      top: -50%;
+      transform: rotate(-45deg);
+      transform-origin: center center;
+      clip-path: polygon(0 45%, 100% 55%, 100% 100%, 0 100%);
+      }
+      .neon-shadow {
+      animation: softNeonPulse 3s infinite;
+      }
+      .url-container {
+      animation: fadeIn 0.3s ease-in-out;
+      backdrop-filter: blur(8px);
+      background: rgba(26, 26, 26, 0.6);
+      border-radius: 12px;
+      padding: 8px;
+      }
+      @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes softNeonPulse {
+      0% { box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
+      50% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.3); }
+      100% { box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
+      }
+      @keyframes borderRotate {
+      0% {
+      border-image: linear-gradient(0deg, rgba(255, 0, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3)) 1;
+      }
+      100% {
+      border-image: linear-gradient(360deg, rgba(255, 0, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3)) 1;
+      }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-secondary" style="background-color: #1a1a1a;">
+    <div class="diagonal-lines"></div>
+    <header
+      class="flex justify-between items-center px-6 h-16 border-b border-primary/20 backdrop-blur-md bg-secondary/50"
+    >
+      <div class="text-primary text-2xl font-['Pacifico']">logo</div>
+      <button
+        class="w-10 h-10 flex items-center justify-center text-primary hover:text-primary/80 transition-colors cursor-pointer"
+      >
+        <i class="ri-settings-3-line text-xl"></i>
+      </button>
+    </header>
+    <main
+      class="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-4rem)] relative"
+    >
+      <div
+        class="w-full max-w-xl bg-black/20 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)]"
+      >
+        <div id="urlList" class="space-y-4">
+          <div class="url-container flex flex-col gap-4">
+            <div class="relative flex-1">
+              <div class="flex gap-2">
+                <div class="relative flex-1 flex">
+                  <input
+                    type="text"
+                    class="url-input flex-1 px-4 py-3 rounded-l-button focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="Insira a URL aqui"
+                  />
+                  <button 
+                    onclick="clearInput(this)" 
+                    class="clear-btn bg-black/30 px-3 text-white/70 hover:text-white transition-colors rounded-r-button border-l border-white/10">
+                    <i class="ri-close-line"></i>
+                  </button>
+                </div>
+                <div class="relative">
+                  <button
+                    onclick="toggleFormat(this)"
+                    class="format-selector h-full px-4 bg-black/30 text-white rounded-button hover:bg-black/40 transition-all cursor-pointer backdrop-blur-sm flex items-center gap-2"
+                  >
+                    <span class="format-text">.mp4</span>
+                    <i class="ri-arrow-down-s-line"></i>
+                  </button>
+                  <div
+                    class="format-dropdown hidden absolute top-full right-0 mt-1 w-full bg-black/90 rounded-button overflow-hidden"
+                  >
+                    <div
+                      onclick="selectFormat(this, '.mp4')"
+                      class="px-4 py-2 hover:bg-white/10 cursor-pointer text-white"
+                    >
+                      .mp4
+                    </div>
+                    <div
+                      onclick="selectFormat(this, '.mp3')"
+                      class="px-4 py-2 hover:bg-white/10 cursor-pointer text-white"
+                    >
+                      .mp3
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="error-message hidden text-red-500 text-sm mt-2 px-2">
+                URL inválida. Por favor, insira um link válido.
+              </div>
+              <div
+                class="progress-bar hidden w-full h-2 bg-black/30 rounded-full mt-3"
+              >
+                <div
+                  class="progress w-0 h-full bg-primary rounded-full transition-all duration-300"
+                ></div>
+              </div>
+              <div class="progress-text hidden text-sm text-white/70 mt-1">
+                0%
+              </div>
+            </div>
+            <button
+              onclick="removeUrl(this)"
+              class="hidden remove-url w-10 h-12 flex items-center justify-center text-red-500 hover:text-red-400 transition-colors cursor-pointer self-end"
+            >
+              <i class="ri-close-line text-xl"></i>
+            </button>
+          </div>
+        </div>
+        <div class="flex justify-center gap-4 mt-6">
+          <button
+            onclick="addNewUrl()"
+            class="flex items-center gap-2 px-6 py-3 bg-black/30 text-white rounded-button hover:bg-black/40 transition-all cursor-pointer backdrop-blur-sm"
+          >
+            <i class="ri-add-line"></i>
+            <span>Adicionar URL</span>
+          </button>
+          <button
+            onclick="startDownload()"
+            class="px-8 py-3 bg-primary/80 text-white font-semibold rounded-button hover:bg-primary/90 transition-all cursor-pointer whitespace-nowrap backdrop-blur-sm"
+          >
+            DOWNLOAD
+          </button>
+        </div>
+      </div>
+    </main>
+    <div
+      id="notification"
+      class="fixed top-4 right-4 hidden bg-white rounded-lg shadow-lg p-4 max-w-sm"
+    >
+      <div class="flex items-center gap-3">
+        <i class="ri-information-line text-primary text-xl"></i>
+        <p id="notificationText" class="text-gray-800"></p>
+      </div>
+    </div>
+    <script>
+      function addNewUrl() {
+        const urlList = document.getElementById("urlList");
+        const urlContainers = urlList.getElementsByClassName("url-container");
+        if (urlContainers.length < 5) {
+          const newContainer = urlContainers[0].cloneNode(true);
+          newContainer.querySelector("input").value = "";
+          newContainer.querySelector(".error-message").classList.add("hidden");
+          newContainer.querySelector(".remove-url").classList.remove("hidden");
+          newContainer.querySelector(".progress-bar").classList.add("hidden");
+          newContainer.querySelector(".progress").style.width = "0%";
+          newContainer.querySelector(".progress-text").classList.add("hidden");
+          newContainer.querySelector(".progress-text").textContent = "0%";
+          newContainer.querySelector(".format-text").textContent = ".mp4";
+          urlList.appendChild(newContainer);
+        } else {
+          showNotification("Limite máximo de 5 URLs atingido");
+        }
+      }
+      
+      function clearInput(button) {
+        const input = button.closest(".flex").querySelector("input");
+        input.value = "";
+        input.focus();
+      }
+      
+      function removeUrl(button) {
+        const urlList = document.getElementById("urlList");
+        if (urlList.children.length > 1) {
+          button.closest(".url-container").remove();
+        }
+      }
+      
+      function validateUrl(url) {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      
+      function toggleFormat(button) {
+        const dropdown = button.parentElement.querySelector(".format-dropdown");
+        dropdown.classList.toggle("hidden");
+      }
+      
+      function selectFormat(option, format) {
+        const button = option.closest(".relative").querySelector(".format-selector");
+        button.querySelector(".format-text").textContent = format;
+        option.closest(".format-dropdown").classList.add("hidden");
+      }
+      
+      function startDownload() {
+        const containers = document.querySelectorAll(".url-container");
+        let hasError = false;
+      
+        const downloadData = [];
+      
+        containers.forEach((container, index) => {
+          const input = container.querySelector(".url-input");
+          const errorMessage = container.querySelector(".error-message");
+          const progressBar = container.querySelector(".progress-bar");
+          const progress = container.querySelector(".progress");
+          const progressText = container.querySelector(".progress-text");
+          const format = container.querySelector(".format-text").textContent;
+      
+          if (!input.value.trim() || !validateUrl(input.value)) {
+            errorMessage.classList.remove("hidden");
+            hasError = true;
+          } else {
+            errorMessage.classList.add("hidden");
+            downloadData.push({
+              url: input.value,
+              format: format.replace('.', '') // .mp4 -> mp4
+            });
+          }
+        });
+      
+        if (!hasError) {
+          showNotification("Iniciando downloads...");
+      
+          // Enviar dados para o backend
+          downloadData.forEach(data => {
+            const payload = {
+              url: data.url,
+              format: data.format
+            };
+      
+            fetch("/download", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.message) {
+                showNotification(`Download Concluído: ${data.message}`);
+              } else {
+                showNotification(`Erro: ${data.error}`);
+              }
+            })
+            .catch(error => {
+              showNotification(`Erro ao iniciar o download: ${error.message}`);
+            });
+          });
+        }
+      }
+      
+      function showNotification(message) {
+        const notification = document.getElementById("notification");
+        const notificationText = document.getElementById("notificationText");
+        notificationText.textContent = message;
+        notification.classList.remove("hidden");
+        setTimeout(() => {
+          notification.classList.add("hidden");
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
